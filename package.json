@@ -1,0 +1,50 @@
+{
+  "name": "portal_nota",
+  "version": "1.0.0",
+  "description": "Portal de notas com Hexagonal + DDD + CQRS + Event Driven",
+  "main": "dist/src/apps/portal/backend/server.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "dev": "concurrently --names \"backend,frontend\" --prefix-colors \"cyan,magenta\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "tsx src/apps/portal/backend/server.ts",
+    "dev:frontend": "npm start --prefix src/apps/portal/frontend",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "tsc -p tsconfig.json",
+    "build:frontend": "npm run build --prefix src/apps/portal/frontend",
+    "lint": "tsc --noEmit -p tsconfig.json",
+    "test": "node --import tsx --test tests/unit/boletimDisciplina.spec.ts tests/integration/api.spec.ts",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "seed:mongo": "mongosh \"mongodb://localhost:27017/portal_notas\" --file scripts/mongo-seed.js",
+    "seed:mongo:docker": "docker cp scripts/mongo-seed.js portal_notas_mongo:/tmp/mongo-seed.js && docker exec portal_notas_mongo mongosh \"mongodb://localhost:27017/portal_notas\" --file /tmp/mongo-seed.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "amqplib": "^2.0.1",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongodb": "^7.3.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.8",
+    "@types/bcryptjs": "^3.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^25.9.3",
+    "@types/supertest": "^7.2.0",
+    "concurrently": "^10.0.3",
+    "supertest": "^7.2.2",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3"
+  }
+}
