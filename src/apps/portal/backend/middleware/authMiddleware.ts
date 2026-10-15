@@ -45,3 +45,25 @@ export function requirePerfil(perfil: Perfil) {
     next();
   };
 }
+
+export function requireOwnership(paramName: string) {
+  return (request: Request, response: Response, next: NextFunction) => {
+    if (!request.auth) {
+      response.status(401).json({ message: 'Token não fornecido.' });
+      return;
+    }
+
+    const resourceOwnerId = request.params[paramName];
+    if (typeof resourceOwnerId !== 'string' || resourceOwnerId.length === 0) {
+      response.status(400).json({ message: `Parâmetro inválido: ${paramName}` });
+      return;
+    }
+
+    if (request.auth.referenciaId !== resourceOwnerId) {
+      response.status(403).json({ message: 'Acesso negado ao recurso solicitado.' });
+      return;
+    }
+
+    next();
+  };
+}
