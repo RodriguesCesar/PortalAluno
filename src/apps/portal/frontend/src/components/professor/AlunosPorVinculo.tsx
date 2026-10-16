@@ -49,8 +49,7 @@ function AlunosPorVinculo({
     };
     try {
       const fn = modal.prova === 'P1' ? registrarNotaP1 : registrarNotaP2;
-      const res = await fn(professorId, payload, authHeader);
-      if (!res.ok) throw new Error();
+      await fn(professorId, payload, authHeader);
       setModal(null);
       onNotaRegistrada();
     } catch {
