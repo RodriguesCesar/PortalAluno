@@ -5,11 +5,7 @@ import { BoletimQueryService } from "../../../../Contexts/Boletim/application/qu
 import { VinculoDocenteQueryService } from "../../../../Contexts/VinculoDocente/application/VinculoDocenteService";
 
 function getParam(request: Request, key: string): string {
-  const value = request.params[key];
-  if (typeof value !== "string") {
-    throw new Error(`Parâmetro inválido: ${key}`);
-  }
-  return value;
+  return z.string().min(1, `Parâmetro inválido: ${key}`).parse(request.params[key]);
 }
 
 const notaSchema = z.object({
