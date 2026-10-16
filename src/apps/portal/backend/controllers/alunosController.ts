@@ -1,12 +1,17 @@
 import { Request, Response } from "express";
+import { z } from "zod";
 import { BoletimQueryService } from "../../../../Contexts/Boletim/application/queries/BoletimQueries";
 
 function getParam(request: Request, key: string): string {
-  const value = request.params[key];
-  if (typeof value !== "string") {
-    throw new Error(`Parâmetro inválido: ${key}`);
-  }
-  return value;
+  return z.string().min(1, `Parâmetro inválido: ${key}`).parse(request.params[key]);
+}
+
+function getTurmaId(request: Request): string {
+  const querySchema = z.object({
+    turmaId: z.string().min(1, "Parâmetro inválido: turmaId")
+  });
+
+  return querySchema.parse(request.query).turmaId;
 }
 
 export class AlunosController {
@@ -27,7 +32,7 @@ export class AlunosController {
   buscarSituacao = async (request: Request, response: Response) => {
     const alunoId = getParam(request, "alunoId");
     const disciplinaId = getParam(request, "disciplinaId");
-    const turmaId = request.query.turmaId as string;
+    const turmaId = getTurmaId(request);
     const status = await this.boletimQueries.buscarStatusDoAlunoNaDisciplina(alunoId, turmaId, disciplinaId);
     response.json({ status });
   };
@@ -35,7 +40,7 @@ export class AlunosController {
   buscarNotas = async (request: Request, response: Response) => {
     const alunoId = getParam(request, "alunoId");
     const disciplinaId = getParam(request, "disciplinaId");
-    const turmaId = request.query.turmaId as string;
+    const turmaId = getTurmaId(request);
     const data = await this.boletimQueries.buscarNotasDoAlunoNaDisciplina(alunoId, turmaId, disciplinaId);
     response.json(data);
   };
