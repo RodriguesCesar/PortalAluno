@@ -193,3 +193,33 @@ test("deve retornar 403 quando aluno acessa notas de outro aluno", async () => {
 
   assert.equal(response.status, 403);
 });
+
+test("deve retornar 400 quando turmaId não é informado em notas", async () => {
+  const response = await request(app)
+    .get("/alunos/aluno-1/disciplinas/disc-1/notas")
+    .set(authHeader(aluno1Token));
+
+  assert.equal(response.status, 400);
+});
+
+test("deve retornar 400 quando turmaId não é informado em situação", async () => {
+  const response = await request(app)
+    .get("/alunos/aluno-1/disciplinas/disc-1/situacao")
+    .set(authHeader(aluno1Token));
+
+  assert.equal(response.status, 400);
+});
+
+test("deve retornar 400 quando payload de nota é inválido", async () => {
+  const response = await request(app)
+    .post("/professores/prof-1/notas/p1")
+    .set(authHeader(professor1Token))
+    .send({
+      alunoId: "aluno-1",
+      turmaId: "turma-1",
+      disciplinaId: "disc-1",
+      nota: 12
+    });
+
+  assert.equal(response.status, 400);
+});
