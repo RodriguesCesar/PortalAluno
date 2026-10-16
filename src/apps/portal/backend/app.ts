@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import { ZodError } from "zod";
 import { DomainError } from "../../../Contexts/Shared/DomainError";
 import { AlunosController } from "./controllers/alunosController";
 import { ProfessoresController } from "./controllers/professoresController";
@@ -41,8 +42,14 @@ function buildApp(deps: AppDeps): express.Application {
       return;
     }
 
+    if (error instanceof ZodError) {
+      const firstIssue = error.issues[0];
+      response.status(400).json({ message: firstIssue?.message ?? "Requisição inválida." });
+      return;
+    }
+
     if (error instanceof Error) {
-      response.status(400).json({ message: error.message });
+      response.status(500).json({ message: "Erro inesperado" });
       return;
     }
 
