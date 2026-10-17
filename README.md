@@ -72,6 +72,14 @@ Principais variáveis (veja `.env.example`):
 
 ---
 
+## Segurança da API
+
+- O backend aplica **headers de segurança** com `helmet`.
+- O endpoint `POST /auth/login` possui **rate limiting** (janela de 15 minutos, até 10 tentativas por IP).
+- Em caso de excesso de tentativas, a API retorna `429` com mensagem orientando a tentar novamente depois.
+
+---
+
 ## Boas práticas e notas importantes
 
 - O frontend NÃO deve conectar diretamente ao RabbitMQ — consuma via API/projeções.

@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import { rateLimit } from "express-rate-limit";
 import { ZodError } from "zod";
 import { DomainError } from "../../../Contexts/Shared/DomainError";
 import { AlunosController } from "./controllers/alunosController";
@@ -23,6 +25,15 @@ interface AppDeps {
 function buildApp(deps: AppDeps): express.Application {
   const app = express();
 
+  const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: "Muitas tentativas de login. Tente novamente em alguns minutos." }
+  });
+
+  app.use(helmet());
   app.use(cors({ origin: deps.frontendOrigin, credentials: true }));
 
   const alunosController = new AlunosController(deps.boletimQueries);
@@ -34,6 +45,7 @@ function buildApp(deps: AppDeps): express.Application {
   const authController = new AuthController(deps.loginHandler);
 
   app.use(express.json());
+  app.use("/auth/login", loginLimiter);
   app.use(buildRoutes(alunosController, professoresController, authController, deps.jwtSecret));
 
   app.use((error: unknown, _: express.Request, response: express.Response, __: express.NextFunction) => {
