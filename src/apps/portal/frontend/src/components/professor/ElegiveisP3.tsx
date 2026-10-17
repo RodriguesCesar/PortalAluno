@@ -27,8 +27,7 @@ function ElegiveisP3({ professorId, turmaId, disciplinaId, alunos, authHeader, o
     if (!modal) return;
     const payload: LancarNotaPayload = { alunoId: modal.alunoId, turmaId, disciplinaId, nota: valor };
     try {
-      const res = await registrarNotaP3(professorId, payload, authHeader);
-      if (!res.ok) throw new Error();
+      await registrarNotaP3(professorId, payload, authHeader);
       setModal(null);
       onNotaRegistrada();
     } catch {
