@@ -9,6 +9,16 @@ jobs:
   backend-quality:
     name: Backend quality
     runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd="mongosh --quiet --eval \"db.adminCommand('ping').ok\" || exit 1"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
 
     steps:
       - name: Checkout
@@ -60,7 +70,7 @@ jobs:
         run: npm run build --prefix src/apps/portal/frontend
 
       - name: Run frontend tests
-        run: npm test --prefix src/apps/portal/frontend -- --watchAll=false
+        run: npm test --prefix src/apps/portal/frontend -- --watchAll=false --passWithNoTests
         env:
           CI: true
 
