@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend-quality:
+    name: Backend quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint backend
+        run: npm run lint
+
+      - name: Build backend
+        run: npm run build:backend
+
+      - name: Run backend tests
+        run: npm test
+
+  frontend-quality:
+    name: Frontend quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: src/apps/portal/frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci --prefix src/apps/portal/frontend
+
+      - name: Build frontend
+        run: npm run build --prefix src/apps/portal/frontend
+
+      - name: Run frontend tests
+        run: npm test --prefix src/apps/portal/frontend -- --watchAll=false
+        env:
+          CI: true
+
+  security-audit:
+    name: Security audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            src/apps/portal/frontend/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci
+
+      - name: Audit backend production dependencies (blocking)
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Install frontend dependencies
+        run: npm ci --prefix src/apps/portal/frontend
+
+      - name: Audit frontend production dependencies (advisory)
+        run: npm audit --prefix src/apps/portal/frontend --omit=dev --audit-level=high
+        continue-on-error: true
