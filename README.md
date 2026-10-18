@@ -112,6 +112,39 @@ Principais variáveis (veja `.env.example`):
 
 ---
 
+## Baseline operacional de segurança
+
+- **Segredos**
+  - Não comite `.env` em repositório.
+  - Trate `JWT_SECRET` como segredo sensível e faça rotação periódica.
+- **CORS por ambiente**
+  - Defina `FRONTEND_ORIGIN` de acordo com o ambiente (dev/homolog/prod).
+  - Evite origem ampla (`*`) em produção.
+- **Logs**
+  - Não registrar token JWT, senhas, cookies, ou payloads sensíveis.
+  - Em erros, priorizar mensagens técnicas sem dados pessoais.
+- **Sessão**
+  - Estado atual usa `localStorage` (educacional).
+  - Estratégia recomendada para produção: cookie `httpOnly` + refresh token com rotação.
+
+---
+
+## Testes e CI
+
+- O repositório possui workflow de CI em `.github/workflows/ci.yml` com:
+  - lint, build e testes de backend;
+  - build e testes de frontend;
+  - auditoria de dependências.
+
+### Política de falha no pipeline
+
+- **Bloqueante**: lint/build/test e auditoria de dependências de produção do backend (`npm audit --omit=dev --audit-level=high`).
+- **Advisory (temporário)**: auditoria de dependências de produção do frontend.
+  - A falha é registrada no workflow, mas não bloqueia merge nesta fase.
+  - Meta: tornar bloqueante após estabilização das dependências legadas.
+
+---
+
 ## Boas práticas e notas importantes
 
 - O frontend NÃO deve conectar diretamente ao RabbitMQ — consuma via API/projeções.
@@ -120,14 +153,9 @@ Principais variáveis (veja `.env.example`):
 
 ---
 
-## Testes e CI
-
-- Testes backend e frontend usam Jest/@testing-library. Configure pipeline para rodar `npm test -- --coverage` em CI.
-
----
-
 ## Contribuindo
 
 1. Abra uma issue descrevendo a mudança.
 2. Crie um branch nomeado `feat/<descricao>` ou `fix/<descricao>`.
 3. Faça PR com descrição e link para issue.
+

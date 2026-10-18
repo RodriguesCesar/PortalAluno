@@ -1,0 +1,119 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend-quality:
+    name: Backend quality
+    runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd="mongosh --quiet --eval \"db.adminCommand('ping').ok\" || exit 1"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+      rabbitmq:
+        image: rabbitmq:3.13
+        ports:
+          - 5672:5672
+        options: >-
+          --health-cmd="rabbitmq-diagnostics -q ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            src/apps/portal/frontend/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci
+
+      - name: Install frontend dependencies (for root typecheck)
+        run: npm ci --prefix src/apps/portal/frontend
+
+      - name: Lint backend
+        run: npm run lint
+
+      - name: Build backend
+        run: npm run build:backend
+
+      - name: Run backend tests
+        run: npm test -- --test-concurrency=1
+        env:
+          MONGODB_URI: mongodb://localhost:27017/portal_notas
+          RABBITMQ_URL: amqp://localhost:5672
+          RABBITMQ_EXCHANGE: portal-events
+          JWT_SECRET: ci-test-secret
+
+  frontend-quality:
+    name: Frontend quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: src/apps/portal/frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci --prefix src/apps/portal/frontend
+
+      - name: Build frontend
+        run: npm run build --prefix src/apps/portal/frontend
+
+      - name: Run frontend tests
+        run: npm test --prefix src/apps/portal/frontend -- --watchAll=false --passWithNoTests
+        env:
+          CI: true
+
+  security-audit:
+    name: Security audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            src/apps/portal/frontend/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci
+
+      - name: Audit backend production dependencies (blocking)
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Install frontend dependencies
+        run: npm ci --prefix src/apps/portal/frontend
+
+      - name: Audit frontend production dependencies (advisory)
+        run: npm audit --prefix src/apps/portal/frontend --omit=dev --audit-level=high
+        continue-on-error: true
