@@ -55,7 +55,7 @@ jobs:
         run: npm run build:backend
 
       - name: Run backend tests
-        run: npm test
+        run: npm test -- --test-concurrency=1
         env:
           MONGODB_URI: mongodb://localhost:27017/portal_notas
           RABBITMQ_URL: amqp://localhost:5672
