@@ -161,7 +161,7 @@ test("deve listar alunos elegíveis para P3 para professor dono do vínculo", as
     .set(authHeader(professor1Token));
 
   assert.equal(response.status, 200);
-  assert.equal(response.body.includes("aluno-1"), true);
+  assert.equal(Array.isArray(response.body), true);`r`n  assert.equal(response.body.some((aluno: { alunoId: string }) => aluno.alunoId === "aluno-1"), true);
 });
 
 test("deve registrar P3 e atualizar notas do aluno autenticado no próprio recurso", async () => {
@@ -223,3 +223,4 @@ test("deve retornar 400 quando payload de nota é inválido", async () => {
 
   assert.equal(response.status, 400);
 });
+
