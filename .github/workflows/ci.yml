@@ -18,7 +18,16 @@ jobs:
           --health-cmd="mongosh --quiet --eval \"db.adminCommand('ping').ok\" || exit 1"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=5`r`n      rabbitmq:`r`n        image: rabbitmq:3.13`r`n        ports:`r`n          - 5672:5672`r`n        options: >-`r`n          --health-cmd="rabbitmq-diagnostics -q ping"`r`n          --health-interval=10s`r`n          --health-timeout=5s`r`n          --health-retries=5
+          --health-retries=5
+      rabbitmq:
+        image: rabbitmq:3.13
+        ports:
+          - 5672:5672
+        options: >-
+          --health-cmd="rabbitmq-diagnostics -q ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
 
     steps:
       - name: Checkout
@@ -47,7 +56,11 @@ jobs:
 
       - name: Run backend tests
         run: npm test
-        env:`r`n          MONGODB_URI: mongodb://localhost:27017/portal_notas`r`n          RABBITMQ_URL: amqp://localhost:5672`r`n          RABBITMQ_EXCHANGE: portal-events`r`n          JWT_SECRET: ci-test-secret
+        env:
+          MONGODB_URI: mongodb://localhost:27017/portal_notas
+          RABBITMQ_URL: amqp://localhost:5672
+          RABBITMQ_EXCHANGE: portal-events
+          JWT_SECRET: ci-test-secret
 
   frontend-quality:
     name: Frontend quality
@@ -104,5 +117,3 @@ jobs:
       - name: Audit frontend production dependencies (advisory)
         run: npm audit --prefix src/apps/portal/frontend --omit=dev --audit-level=high
         continue-on-error: true
-
-
