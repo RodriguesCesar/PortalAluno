@@ -17,12 +17,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Lint backend
         run: npm run lint
@@ -44,12 +44,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: src/apps/portal/frontend/package-lock.json
 
       - name: Install frontend dependencies
-        run: npm ci --prefix src/apps/portal/frontend
+        run: npm install --prefix src/apps/portal/frontend --no-audit --no-fund
 
       - name: Build frontend
         run: npm run build --prefix src/apps/portal/frontend
@@ -70,20 +70,20 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: |
             package-lock.json
             src/apps/portal/frontend/package-lock.json
 
       - name: Install backend dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Audit backend production dependencies (blocking)
         run: npm audit --omit=dev --audit-level=high
 
       - name: Install frontend dependencies
-        run: npm ci --prefix src/apps/portal/frontend
+        run: npm install --prefix src/apps/portal/frontend --no-audit --no-fund
 
       - name: Audit frontend production dependencies (advisory)
         run: npm audit --prefix src/apps/portal/frontend --omit=dev --audit-level=high
