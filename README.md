@@ -80,10 +80,41 @@ Principais variáveis (veja `.env.example`):
 
 ---
 
+## Estratégia de sessão (frontend)
+
+### Estado atual
+
+- O token JWT é armazenado em `localStorage` para simplificar o fluxo educacional.
+
+### Riscos conhecidos
+
+- `localStorage` é acessível por JavaScript no navegador.
+- Em caso de XSS, há risco de exfiltração do token e sequestro de sessão.
+
+### Mitigações de curto prazo
+
+- Manter validação rigorosa de entrada no backend.
+- Evitar renderização de conteúdo não confiável no frontend.
+- Definir vida útil curta para tokens e revisar escopos de acesso.
+
+### Plano de migração recomendado
+
+1. **Fase 1**: manter fluxo atual com hardening de API e tratamento consistente de erros.
+2. **Fase 2**: migrar autenticação para cookie `httpOnly` + `secure` + `sameSite`.
+3. **Fase 3**: introduzir refresh token com rotação e endpoint dedicado de renovação.
+4. **Fase 4**: remover persistência de token em `localStorage` e ajustar frontend para sessão baseada em cookie.
+
+### Critério de conclusão da migração
+
+- Nenhum token de acesso armazenado em `localStorage`.
+- Renovação de sessão controlada por refresh token rotativo.
+- Logout revogando sessão no backend.
+
+---
+
 ## Boas práticas e notas importantes
 
 - O frontend NÃO deve conectar diretamente ao RabbitMQ — consuma via API/projeções.
-- Tokens JWT atuais são armazenados em localStorage (educacional). Para produção, considere cookies httpOnly + endpoint de refresh.
 - Sempre incluir `?turmaId=` nas chamadas que exigem `turmaId` (boletins/disciplinas).
 - Validar `res.ok` antes de chamar `res.json()` em requests fetch.
 
@@ -100,7 +131,3 @@ Principais variáveis (veja `.env.example`):
 1. Abra uma issue descrevendo a mudança.
 2. Crie um branch nomeado `feat/<descricao>` ou `fix/<descricao>`.
 3. Faça PR com descrição e link para issue.
-
----
-
-Se quiser, atualizo este README com seções adicionais: badges, instruções de deployment, ou exemplos de API. Quer que eu aplique essas melhorias agora?
